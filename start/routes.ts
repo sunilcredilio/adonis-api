@@ -5,4 +5,10 @@ Route.post("/login", "AuthController.login");
 
 Route.group(() => {
   Route.post("/logout", "AuthController.logout");
+  Route.group(() => {
+    Route.post("/", "ProfileController.createuserProfile");
+    Route.get("/", "ProfileController.getUserProfile");
+    Route.put("/", "ProfileController.updateUserProfile");
+    Route.delete("/", "ProfileController.deleteUserProfile");
+  }).prefix("/user/profile");
 }).middleware("auth:api");
