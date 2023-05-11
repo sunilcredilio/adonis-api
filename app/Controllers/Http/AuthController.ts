@@ -27,4 +27,11 @@ export default class AuthController {
       throw error;
     }
   }
+
+  public async logout({ response, auth }) {
+    await auth.use("api").revoke();
+    response.status(200).json({
+      revoked: true,
+    });
+  }
 }
