@@ -1,32 +1,41 @@
+import InvalidDataError from "App/Exceptions/CustomErrors/InvalidDataError";
+import ResourceExistError from "App/Exceptions/CustomErrors/ResourceExistError";
+import UnauthorizedError from "App/Exceptions/CustomErrors/UnauthorizedError";
+import UndefinedFieldError from "App/Exceptions/CustomErrors/UndefiendFieldError";
 import Profile from "App/Models/Profile";
 import User from "App/Models/User";
 import UserProfileValidator from "App/Validators/UserProfileValidator";
 import moment from "moment";
 
-export default class ProfilesController {
+export default class ProfileController {
+
   //For creating the registered user profile
   public async createuserProfile({ request, response, auth }) {
     try {
       const loginUserId = await auth.user.id;
-      //Checking if the profile already exist
       const profile = await Profile.findBy("user_id", loginUserId);
-      if (profile !== null) {
-        throw new Error("Profile already exists");
-      } else {
+
+      //Checking if the profile already exist
+      if(profile !== null){
+        throw new ResourceExistError("Profile already exists");
+      }else{
         const { name, gender, mobileNumber, dateOfBirth } =
           await request.validate(UserProfileValidator);
-        const existedUser = await Profile.findBy("mobile_number", mobileNumber);
-
-        //checking age if less than 18 throwing the error
+        //Getting the age by using moment package
         const age = moment().diff(new Date(dateOfBirth), "years");
-        if (age < 18 || age > 80) {
-          throw new Error("Invalid age");
-        }
+        //Finding the user based on mobile number, for checking same mobile number doesn't belongs to other user
+        const existedProfile = (mobileNumber !== undefined) && await Profile.findBy("mobile_number", mobileNumber);
 
-        //checking mobile number is not used by any other users
-        if (existedUser !== null) {
-          throw new Error("Mobile number already used");
-        } else {
+        //Checking fields after validation, some fields becomes undefined in case if that field contains space only  
+        if (name === undefined || mobileNumber === undefined) {
+          const fieldName = !name ? "name" : "mobileNumber";
+          throw new UndefinedFieldError(`${name} required`, fieldName); 
+        }else if(age <18 || age >80){
+          throw new InvalidDataError("Age should be between 18-80");
+        }else if(existedProfile !== null){
+          throw new ResourceExistError("Mobile number already used");
+        }else{
+          //Create the profile and saved the data on database
           const profile = await Profile.create({
             name,
             gender,
@@ -41,6 +50,7 @@ export default class ProfilesController {
       throw error;
     }
   }
+
   //For getting the profile of login user
   public async getUserProfile({ response, auth }) {
     try {
@@ -65,26 +75,28 @@ export default class ProfilesController {
       const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
       const { name, gender, mobileNumber, dateOfBirth } =
         await request.validate(UserProfileValidator);
-
-      //checking age if less than 18 throwing the error
       const age = moment().diff(new Date(dateOfBirth), "years");
-      if (age < 18 || age >80) {
-        throw new Error("Invalid age");
-      }
 
-      //checking that new mobile number is not belongs to any other user
-      if (exitsedProfile.mobileNumber !== mobileNumber) {
+      if (name === undefined || mobileNumber === undefined) {
+        const fieldName = !name ? "name" : "mobileNumber";
+        throw new UndefinedFieldError(`${name} required`, fieldName); 
+      }else if(age <18 || age >80){
+        throw new InvalidDataError("Age should be between 18-80");
+      }else if(exitsedProfile.mobileNumber !== mobileNumber){
+        //Checking mobile number to be update doesn't belongs to other user
         const profile = Profile.findBy("mobileNumber", mobileNumber);
         if (profile !== null) {
-          throw new Error("Mobile number already used");
+          throw new ResourceExistError("Mobile number already used");
         }
+      }else{
+        //Updating user profile
+        exitsedProfile.name = name;
+        exitsedProfile.gender = gender;
+        exitsedProfile.dateOfBirth = dateOfBirth;
+        exitsedProfile.mobileNumber = mobileNumber;
+        const updatedProfile = await exitsedProfile.save();
+        response.ok(updatedProfile);  
       }
-      exitsedProfile.name = name;
-      exitsedProfile.gender = gender;
-      exitsedProfile.dateOfBirth = dateOfBirth;
-      exitsedProfile.mobileNumber = mobileNumber;
-      const updatedProfile = await exitsedProfile.save();
-      response.ok(updatedProfile);
     } catch (error) {
       throw error;
     }
@@ -94,30 +106,29 @@ export default class ProfilesController {
   public async deleteUserProfile({ request, response, auth }) {
     try {
       const mobileNumber = request.input("mobileNumber");
-      //checking mobile number provide by user
-      if(mobileNumber === undefined){
-        throw new Error("Mobile number required");
-      }
 
-      let validationResult = /^[0-9]{10}$/.test(mobileNumber);
-      if (validationResult === true) {
-        const profile = await Profile.findByOrFail(
-          "mobile_number",
-          mobileNumber
-        );
-        const user = await User.findOrFail(profile.userId);
-        //Checking that update profile is belongs to the login user
-        if (profile.userId === auth.user.id) {
-          user.delete();
-          response.ok({
-            message: "User and profile deleted successfully",
-            timestamp: new Date(),
-          });
-        } else {
-          throw new Error("Unauthorized access");
+      //checking mobile number provide by user
+      if (mobileNumber === undefined) {
+        throw new InvalidDataError("Mobile number required");
+      }else{
+        const validMobileNumber = /^[0-9]{10}$/.test(mobileNumber);
+
+        if(validMobileNumber === true){
+          const profile = await Profile.findByOrFail("mobile_number", mobileNumber);
+          const user = await User.findOrFail(profile.userId);
+          //Checking the account belongs to the login user
+          if(profile.userId === auth.user.id){
+            await user.delete();
+            response.ok({
+              message: "User and profile deleted successfully",
+              timestamp: new Date(),
+            });
+          }else{
+            throw new UnauthorizedError("Unauthorized access");
+          }
+        }else{
+          throw new InvalidDataError("Invalid mobile number");
         }
-      } else {
-        throw new Error("Invalid mobile number");
       }
     } catch (error) {
       throw error;
