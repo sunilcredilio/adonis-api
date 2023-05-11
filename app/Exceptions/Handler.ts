@@ -16,6 +16,11 @@
 import Logger from "@ioc:Adonis/Core/Logger";
 import HttpExceptionHandler from "@ioc:Adonis/Core/HttpExceptionHandler";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import UndefinedFieldError from "./CustomErrors/UndefiendFieldError";
+import UnauthorizedError from "./CustomErrors/UnauthorizedError";
+import ResourceExistError from "./CustomErrors/ResourceExistError";
+import InvalidAgeError from "./CustomErrors/InvalidDataError";
+import InvalidDataError from "./CustomErrors/InvalidDataError";
 
 export default class ExceptionHandler extends HttpExceptionHandler {
   constructor() {
@@ -31,11 +36,8 @@ export default class ExceptionHandler extends HttpExceptionHandler {
 
   //Handling all the errors and send the response based on error
   public async handle( error: any, { response }: HttpContextContract ): Promise<any> {
-    if ( error.code === "E_UNAUTHORIZED_ACCESS" || error.message === "Unauthorized access" ) {
-      response.unauthorized(this.showMessage("Unauthorized access"));
-    } else if (error.constraint === "users_email_unique") {
-      response.conflict(this.showMessage("Email already registered"));
-    } else if (error.code === "E_VALIDATION_FAILURE") {
+
+    if(error.code === "E_VALIDATION_FAILURE"){
       const allValidationMessages = error.messages.errors.reduce(
         ( allValidationErrors: Object[], error: { field: string; message: string }) => {
           const validationMessage = {};
@@ -43,32 +45,40 @@ export default class ExceptionHandler extends HttpExceptionHandler {
           validationMessage["message"] = error.message;
           allValidationErrors.push(validationMessage);
           return allValidationErrors;
-        },
-        []
-      );
+        },[]);
       response.badRequest({
         messages: allValidationMessages,
         timestamp: new Date(),
       });
+    } else if(error.constraint === "users_email_unique"){
+      response.conflict(this.showMessage("Email already registered"));
     } else if (error.code === "E_INVALID_AUTH_UID") {
       response.unauthorized(this.showMessage("Invalid email address"));
     } else if (error.code === "E_INVALID_AUTH_PASSWORD") {
       response.unauthorized(this.showMessage("Invalid password"));
     } else if (error.code === "E_ROUTE_NOT_FOUND") {
       response.notFound(this.showMessage("The url you are looking for doesn't exist"));
-    } else if (error.message === "Profile already exists") {
-      response.badRequest(this.showMessage(error.message));
-    } else if(error.message==="Invalid mobile number"){
-      response.badRequest(this.showMessage("Mobile number should be number only and length should be 10"));
-    }else if(error.message === 'Mobile number required'){
-      response.badRequest(this.showMessage(error.message));
-    }else if(error.code === 'E_ROW_NOT_FOUND'){
+    } else if(error.code === 'E_ROW_NOT_FOUND'){
       response.notFound(this.showMessage("Record not found"));
-    }else if(error.message === 'Mobile number already used'){
+    } else if(error.code === "E_UNAUTHORIZED_ACCESS" || error instanceof UnauthorizedError){
+      response.unauthorized(this.showMessage("Unauthorized access"));
+    } else if (error instanceof ResourceExistError) {
+      response.conflict(this.showMessage(error.message));
+    } else if(error instanceof InvalidDataError){
       response.badRequest(this.showMessage(error.message));
-    }else if(error.message === 'Invalid age'){
-      response.badRequest(this.showMessage("Your age should between 18-80"));
-    }else {
+    } else if(error instanceof InvalidAgeError){
+      response.badRequest(this.showMessage(error.message));
+    } else if(error instanceof UndefinedFieldError){
+      response.badRequest({
+        messages:[
+          {
+            field:`${error.fieldName}`,
+            message:`${error.fieldName} is required`
+          }
+        ],
+        timestamp: new Date()
+      });
+    } else{
       response.internalServerError(this.showMessage("Something went wrong"));
     }
   }
