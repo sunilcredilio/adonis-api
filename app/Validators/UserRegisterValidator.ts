@@ -46,6 +46,7 @@ export default class UserRegisterValidator {
   public messages: CustomMessages = {
     "required":"{{field}} is required",
     "email.email":"Invalid email address",
+    "string":"{{field}} should be in string format",
     "password.regex":"Password length should be 8-16 characters, should contain at least one upper case alphabet, one lower case alphabet and one number"
   };
 }

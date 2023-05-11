@@ -54,6 +54,7 @@ export default class UserProfileValidator {
     "required": "{{field}} is required",
     "name.minLength":"Name should be atleast of 3 characters",
     "name.maxLength":"Name should be atleast of 30 characters",
+    "string":"{{field}} should be in string format",
     "mobileNumber.regex":"Invalid mobile number",
     "gender.enum":"Gender should be either MALE or FEMALE",
     "dateOfBirth.date.format":"Enter valid date, Date format should be [yyyy-mm-dd]"
