@@ -12,14 +12,19 @@ export default class ProfilesController {
       } else {
         const { name, gender, mobileNumber, dateOfBirth } =
           await request.validate(UserProfileValidator);
-        const profile = await Profile.create({
-          name,
-          gender,
-          mobileNumber,
-          dateOfBirth,
-          userId: loginUserId,
-        });
-        response.created(profile);
+        const existedUser = await Profile.findBy("mobile_number", mobileNumber);
+        if (existedUser !== null) {
+            throw new Error("Mobile number already used");
+        } else {
+          const profile = await Profile.create({
+            name,
+            gender,
+            mobileNumber,
+            dateOfBirth,
+            userId: loginUserId,
+          });
+          response.created(profile);
+        }
       }
     } catch (error) {
       throw error;
@@ -48,6 +53,12 @@ export default class ProfilesController {
       const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
       const { name, gender, mobileNumber, dateOfBirth } =
         await request.validate(UserProfileValidator);
+    if(exitsedProfile.mobileNumber !== mobileNumber){
+        const profile = Profile.findBy('mobileNumber',mobileNumber);
+        if(profile !== null){
+            throw new Error("Mobile number already used");
+        }
+    }
       exitsedProfile.name = name;
       exitsedProfile.gender = gender;
       exitsedProfile.dateOfBirth = dateOfBirth;
@@ -62,7 +73,7 @@ export default class ProfilesController {
   public async deleteUserProfile({ request, response, auth }) {
     try {
       const mobileNumber = request.input("mobileNumber");
-      let validationResult = (/^[0-9]{10}$/).test(mobileNumber);
+      let validationResult = /^[0-9]{10}$/.test(mobileNumber);
       if (validationResult === true) {
         const profile = await Profile.findByOrFail(
           "mobile_number",
