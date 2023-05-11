@@ -30,26 +30,17 @@ export default class ExceptionHandler extends HttpExceptionHandler {
   }
 
   //Handling all the errors and send the response based on error
-  public async handle(
-    error: any,
-    { response }: HttpContextContract
-  ): Promise<any> {
-    if (
-      error.code === "E_UNAUTHORIZED_ACCESS" ||
-      error.message === "Unauthorized access"
-    ) {
+  public async handle( error: any, { response }: HttpContextContract ): Promise<any> {
+    if ( error.code === "E_UNAUTHORIZED_ACCESS" || error.message === "Unauthorized access" ) {
       response.unauthorized(this.showMessage("Unauthorized access"));
     } else if (error.constraint === "users_email_unique") {
       response.conflict(this.showMessage("Email already registered"));
     } else if (error.code === "E_VALIDATION_FAILURE") {
       const allValidationMessages = error.messages.errors.reduce(
-        (
-          allValidationErrors: Object[],
-          error: { field: string; message: string }
-        ) => {
+        ( allValidationErrors: Object[], error: { field: string; message: string }) => {
           const validationMessage = {};
-          (validationMessage["field"] = error.field),
-            (validationMessage["message"] = error.message);
+          validationMessage["field"] = error.field,
+          validationMessage["message"] = error.message;
           allValidationErrors.push(validationMessage);
           return allValidationErrors;
         },
@@ -73,6 +64,8 @@ export default class ExceptionHandler extends HttpExceptionHandler {
       response.notFound(this.showMessage("Record not found"));
     }else if(error.message === 'Mobile number already used'){
       response.badRequest(this.showMessage(error.message));
+    }else if(error.message === 'Invalid age'){
+      response.badRequest(this.showMessage("Your age should between 18-80"));
     }else {
       response.internalServerError(this.showMessage("Something went wrong"));
     }

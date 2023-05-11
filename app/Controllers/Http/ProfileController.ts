@@ -1,6 +1,7 @@
 import Profile from "App/Models/Profile";
 import User from "App/Models/User";
 import UserProfileValidator from "App/Validators/UserProfileValidator";
+import moment from "moment";
 
 export default class ProfilesController {
   //For creating the registered user profile
@@ -15,9 +16,16 @@ export default class ProfilesController {
         const { name, gender, mobileNumber, dateOfBirth } =
           await request.validate(UserProfileValidator);
         const existedUser = await Profile.findBy("mobile_number", mobileNumber);
+
+        //checking age if less than 18 throwing the error
+        const age = moment().diff(new Date(dateOfBirth), "years");
+        if (age < 18 || age > 80) {
+          throw new Error("Invalid age");
+        }
+
         //checking mobile number is not used by any other users
         if (existedUser !== null) {
-            throw new Error("Mobile number already used");
+          throw new Error("Mobile number already used");
         } else {
           const profile = await Profile.create({
             name,
@@ -57,13 +65,20 @@ export default class ProfilesController {
       const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
       const { name, gender, mobileNumber, dateOfBirth } =
         await request.validate(UserProfileValidator);
-        //checking that new mobile number is not belongs to any other user
-    if(exitsedProfile.mobileNumber !== mobileNumber){
-        const profile = Profile.findBy('mobileNumber',mobileNumber);
-        if(profile !== null){
-            throw new Error("Mobile number already used");
+
+      //checking age if less than 18 throwing the error
+      const age = moment().diff(new Date(dateOfBirth), "years");
+      if (age < 18 || age >80) {
+        throw new Error("Invalid age");
+      }
+
+      //checking that new mobile number is not belongs to any other user
+      if (exitsedProfile.mobileNumber !== mobileNumber) {
+        const profile = Profile.findBy("mobileNumber", mobileNumber);
+        if (profile !== null) {
+          throw new Error("Mobile number already used");
         }
-    }
+      }
       exitsedProfile.name = name;
       exitsedProfile.gender = gender;
       exitsedProfile.dateOfBirth = dateOfBirth;
