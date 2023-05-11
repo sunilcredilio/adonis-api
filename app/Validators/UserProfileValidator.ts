@@ -29,7 +29,8 @@ export default class UserProfileValidator {
       rules.maxLength(30)
     ]),
     mobileNumber: schema.string({trim:true},[
-      rules.regex(/^[0-9]{10}$/)
+      rules.regex(/^[0-9]{10}$/),
+      rules.unique({table:'profiles',column:'mobile_number'})
     ]),
     gender: schema.enum(
       ['MALE','FEMALE'] as const
@@ -53,6 +54,7 @@ export default class UserProfileValidator {
     "name.minLength":"Name should be atleast of 3 characters",
     "name.maxLength":"Name should be atleast of 30 characters",
     "mobileNumber.regex":"Invalid mobile number",
+    "mobileNumber.unique":"Mobile number already used",
     "gender.enum":"Gender should be either MALE or FEMALE",
     "dateOfBirth.date":"Invalid date"
   };
