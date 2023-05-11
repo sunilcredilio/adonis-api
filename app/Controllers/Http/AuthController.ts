@@ -5,7 +5,8 @@ export default class AuthController {
   //For Registering the user
   public async register({ request, response }) {
     try {
-      const { email, password } = await request.validate(UserRegisterValidator);
+      let { email, password } = await request.validate(UserRegisterValidator);
+      email = email.toLowerCase();
       const savedUser = await User.create({
         email,
         password,

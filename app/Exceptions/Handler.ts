@@ -34,7 +34,6 @@ export default class ExceptionHandler extends HttpExceptionHandler {
     error: any,
     { response }: HttpContextContract
   ): Promise<any> {
-    console.log(error.code);
     if (
       error.code === "E_UNAUTHORIZED_ACCESS" ||
       error.message === "Unauthorized access"
