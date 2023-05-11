@@ -3,9 +3,11 @@ import User from "App/Models/User";
 import UserProfileValidator from "App/Validators/UserProfileValidator";
 
 export default class ProfilesController {
+  //For creating the registered user profile
   public async createuserProfile({ request, response, auth }) {
     try {
       const loginUserId = await auth.user.id;
+      //Checking if the profile already exist
       const profile = await Profile.findBy("user_id", loginUserId);
       if (profile !== null) {
         throw new Error("Profile already exists");
@@ -13,6 +15,7 @@ export default class ProfilesController {
         const { name, gender, mobileNumber, dateOfBirth } =
           await request.validate(UserProfileValidator);
         const existedUser = await Profile.findBy("mobile_number", mobileNumber);
+        //checking mobile number is not used by any other users
         if (existedUser !== null) {
             throw new Error("Mobile number already used");
         } else {
@@ -30,7 +33,7 @@ export default class ProfilesController {
       throw error;
     }
   }
-
+  //For getting the profile of login user
   public async getUserProfile({ response, auth }) {
     try {
       const loginUserId = await auth.user.id;
@@ -47,12 +50,14 @@ export default class ProfilesController {
       throw error;
     }
   }
+  //For updating the login user profile
   public async updateUserProfile({ request, response, auth }) {
     try {
       const loginuserId = await auth.user.id;
       const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
       const { name, gender, mobileNumber, dateOfBirth } =
         await request.validate(UserProfileValidator);
+        //checking that new mobile number is not belongs to any other user
     if(exitsedProfile.mobileNumber !== mobileNumber){
         const profile = Profile.findBy('mobileNumber',mobileNumber);
         if(profile !== null){
@@ -70,6 +75,7 @@ export default class ProfilesController {
     }
   }
 
+  //For deleting the user and profile based on mobile number
   public async deleteUserProfile({ request, response, auth }) {
     try {
       const mobileNumber = request.input("mobileNumber");
@@ -80,6 +86,7 @@ export default class ProfilesController {
           mobileNumber
         );
         const user = await User.findOrFail(profile.userId);
+        //Checking that update profile is belongs to the login user
         if (profile.userId === auth.user.id) {
           user.delete();
           response.ok({

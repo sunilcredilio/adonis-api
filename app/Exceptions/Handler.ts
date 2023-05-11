@@ -29,6 +29,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
     };
   }
 
+  //Handling all the errors and send the response based on error
   public async handle(
     error: any,
     { response }: HttpContextContract
