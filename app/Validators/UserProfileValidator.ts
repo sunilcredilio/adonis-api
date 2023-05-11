@@ -35,7 +35,9 @@ export default class UserProfileValidator {
     gender: schema.enum(
       ['MALE','FEMALE'] as const
     ),
-    dateOfBirth: schema.date()
+    dateOfBirth: schema.date({
+      format: 'yyyy-MM-dd',
+    },)
   });
 
   /**
@@ -56,6 +58,6 @@ export default class UserProfileValidator {
     "mobileNumber.regex":"Invalid mobile number",
     "mobileNumber.unique":"Mobile number already used",
     "gender.enum":"Gender should be either MALE or FEMALE",
-    "dateOfBirth.date":"Invalid date"
+    "dateOfBirth.date.format":"Enter valid date, Date format should be [yyyy-mm-dd]"
   };
 }
