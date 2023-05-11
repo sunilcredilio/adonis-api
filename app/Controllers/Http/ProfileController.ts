@@ -42,4 +42,32 @@ export default class ProfilesController {
       throw error;
     }
   }
+  public async updateUserProfile({}) {}
+
+  public async deleteUserProfile({ request, response, auth }) {
+    try {
+      const mobileNumber = request.input("mobileNumber");
+      let validationResult = /^[0-9]{10}$/.test(mobileNumber);
+      if (validationResult === true) {
+        const profile = await Profile.findByOrFail(
+          "mobile_number",
+          mobileNumber
+        );
+        const user = await User.findOrFail(profile.userId);
+        if (profile.userId === auth.user.id) {
+          user.delete();
+          response.ok({
+            message: "User and profile deleted successfully",
+            timestamp: new Date(),
+          });
+        } else {
+          throw new Error("Unauthorized access");
+        }
+      } else {
+        throw new Error("Invalid mobile number");
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 }
