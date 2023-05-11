@@ -25,8 +25,7 @@ export default class UserRegisterValidator {
    */
   public schema = schema.create({
     email: schema.string({ trim: true },[
-        rules.email(),
-        rules.unique({ table: 'users', column: 'email' })
+        rules.email()
       ]),
     password: schema.string({ trim: true }, [
       rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,16}$/),
