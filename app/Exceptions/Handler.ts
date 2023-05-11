@@ -19,7 +19,6 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import UndefinedFieldError from "./CustomErrors/UndefiendFieldError";
 import UnauthorizedError from "./CustomErrors/UnauthorizedError";
 import ResourceExistError from "./CustomErrors/ResourceExistError";
-import InvalidAgeError from "./CustomErrors/InvalidDataError";
 import InvalidDataError from "./CustomErrors/InvalidDataError";
 
 export default class ExceptionHandler extends HttpExceptionHandler {
@@ -65,8 +64,6 @@ export default class ExceptionHandler extends HttpExceptionHandler {
     } else if (error instanceof ResourceExistError) {
       response.conflict(this.showMessage(error.message));
     } else if(error instanceof InvalidDataError){
-      response.badRequest(this.showMessage(error.message));
-    } else if(error instanceof InvalidAgeError){
       response.badRequest(this.showMessage(error.message));
     } else if(error instanceof UndefinedFieldError){
       response.badRequest({
