@@ -42,12 +42,27 @@ export default class ProfilesController {
       throw error;
     }
   }
-  public async updateUserProfile({}) {}
+  public async updateUserProfile({ request, response, auth }) {
+    try {
+      const loginuserId = await auth.user.id;
+      const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
+      const { name, gender, mobileNumber, dateOfBirth } =
+        await request.validate(UserProfileValidator);
+      exitsedProfile.name = name;
+      exitsedProfile.gender = gender;
+      exitsedProfile.dateOfBirth = dateOfBirth;
+      exitsedProfile.mobileNumber = mobileNumber;
+      const updatedProfile = await exitsedProfile.save();
+      response.ok(updatedProfile);
+    } catch (error) {
+      throw error;
+    }
+  }
 
   public async deleteUserProfile({ request, response, auth }) {
     try {
       const mobileNumber = request.input("mobileNumber");
-      let validationResult = /^[0-9]{10}$/.test(mobileNumber);
+      let validationResult = (/^[0-9]{10}$/).test(mobileNumber);
       if (validationResult === true) {
         const profile = await Profile.findByOrFail(
           "mobile_number",
