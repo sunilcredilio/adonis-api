@@ -52,8 +52,8 @@ export default class UserProfileValidator {
    */
   public messages: CustomMessages = {
     "required": "{{field}} is required",
-    "name.minLength":"Name should be atleast of 3 characters",
-    "name.maxLength":"Name should be atleast of 30 characters",
+    "name.minLength":"Name should be at least of 3 characters",
+    "name.maxLength":"Name should be at most of 30 characters",
     "string":"{{field}} should be in string format",
     "mobileNumber.regex":"Mobile number should be 10 digits",
     "gender.enum":"Gender should be either MALE or FEMALE",
