@@ -60,6 +60,8 @@ export default class ExceptionHandler extends HttpExceptionHandler {
       response.badRequest(this.showMessage(error.message));
     } else if(error.message==="Invalid mobile number"){
       response.badRequest(this.showMessage("Mobile number should be number only and length should be 10"));
+    }else if(error.message === 'Mobile number required'){
+      response.badRequest(this.showMessage(error.message));
     }else if(error.code === 'E_ROW_NOT_FOUND'){
       response.notFound(this.showMessage("Record not found"));
     }else if(error.message === 'Mobile number already used'){

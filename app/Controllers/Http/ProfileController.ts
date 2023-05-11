@@ -94,6 +94,11 @@ export default class ProfilesController {
   public async deleteUserProfile({ request, response, auth }) {
     try {
       const mobileNumber = request.input("mobileNumber");
+      //checking mobile number provide by user
+      if(mobileNumber === undefined){
+        throw new Error("Mobile number required");
+      }
+
       let validationResult = /^[0-9]{10}$/.test(mobileNumber);
       if (validationResult === true) {
         const profile = await Profile.findByOrFail(
