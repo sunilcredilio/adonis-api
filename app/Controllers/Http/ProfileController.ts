@@ -12,7 +12,7 @@ export default class ProfileController {
   //For creating the registered user profile
   public async createuserProfile({ request, response, auth }) {
     try {
-      const loginUserId = await auth.user.id;
+      const loginUserId = auth.user.id;
       const profile = await Profile.findBy("user_id", loginUserId);
 
       //Checking if the profile already exist
@@ -54,7 +54,7 @@ export default class ProfileController {
   //For getting the profile of login user
   public async getUserProfile({ response, auth }) {
     try {
-      const loginUserId = await auth.user.id;
+      const loginUserId = auth.user.id;
       const userProfile = await Profile.findByOrFail("userId", loginUserId);
       const user = await User.findOrFail(loginUserId);
       const userDetails = {
@@ -71,7 +71,7 @@ export default class ProfileController {
   //For updating the login user profile
   public async updateUserProfile({ request, response, auth }) {
     try {
-      const loginuserId = await auth.user.id;
+      const loginuserId = auth.user.id;
       const exitsedProfile = await Profile.findByOrFail("userId", loginuserId);
       const { name, gender, mobileNumber, dateOfBirth } =
         await request.validate(UserProfileValidator);
