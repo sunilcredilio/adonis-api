@@ -6,7 +6,7 @@ Route.post("/login", "AuthController.login");
 Route.group(() => {
   Route.post("/logout", "AuthController.logout");
   Route.group(() => {
-    Route.post("/", "ProfileController.createuserProfile");
+    Route.post("/", "ProfileController.createUserProfile");
     Route.get("/", "ProfileController.getUserProfile");
     Route.put("/", "ProfileController.updateUserProfile");
     Route.delete("/", "ProfileController.deleteUserProfile");
