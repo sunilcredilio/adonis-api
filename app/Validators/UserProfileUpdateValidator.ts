@@ -1,7 +1,7 @@
 import { schema, CustomMessages, rules } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
-export default class UserProfileValidator {
+export default class UserProfileUpdateValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   /*
@@ -24,19 +24,20 @@ export default class UserProfileValidator {
    *    ```
    */
   public schema = schema.create({
-    name: schema.string({ trim: true }, [
+    name: schema.string.optional({ trim: true }, [
       rules.minLength(3),
       rules.maxLength(30)
     ]),
-    mobileNumber: schema.string({trim:true},[
-      rules.regex(/^[0-9]{10}$/)
+    mobileNumber: schema.string.optional({trim:true},[
+      rules.mobile({ locale: ["en-IN"] }),
+      rules.unique({column:'mobile_number',table:"profiles"})
     ]),
-    gender: schema.enum(
+    gender: schema.enum.optional(
       ['MALE','FEMALE'] as const
     ),
-    dateOfBirth: schema.date({
+    dateOfBirth: schema.date.optional({
       format: 'yyyy-MM-dd',
-    },)
+    },[rules.before('today')])
   });
 
   /**
@@ -51,13 +52,14 @@ export default class UserProfileValidator {
    *
    */
   public messages: CustomMessages = {
-    "required": "{{field}} is required",
-    "name.minLength":"Name should be at least of 3 characters",
-    "name.maxLength":"Name should be at most of 30 characters",
-    "string":"{{field}} should be in string format",
-    "mobileNumber.regex":"Mobile number should be 10 digits",
-    "gender.enum":"Gender should be either MALE or FEMALE",
-    "dateOfBirth.date":"Enter valid date, Date format should be [yyyy-mm-dd]",
-    "dateOfBirth.date.format":"Enter valid date, Date format should be [yyyy-mm-dd]"
+    "string": "{{field}} should be in string format",
+    "name.minLength": "Name should be at least of 3 characters",
+    "name.maxLength": "Name should be at most of 30 characters",
+    "mobileNumber.mobile": "Invalid mobile number",
+    "mobileNumber.unique": "Mobile number already used",
+    "gender.enum": "Gender should be either MALE or FEMALE",
+    "dateOfBirth.date": "Enter valid date, Date format should be [yyyy-mm-dd]",
+    "dateOfBirth.date.format": "Enter valid date, Date format should be [yyyy-mm-dd]",
+    "dateOfBirth.before":"Date of birth should be past date only"
   };
 }
