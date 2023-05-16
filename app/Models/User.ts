@@ -7,7 +7,7 @@ export default class User extends BaseModel {
   @column({ columnName: "id", isPrimary: true })
   public id: number;
 
-  @column({ columnName: "email" })
+  @column({ columnName: "email"})
   public email: string;
 
   @column({ columnName: "password", serializeAs: null })
@@ -21,6 +21,13 @@ export default class User extends BaseModel {
 
   @column.dateTime({ columnName: "updated_at", autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @beforeSave()
+  public static emailToLowerCase(user: User){
+    if(user.$dirty.email){
+      user.email = user.email.toLowerCase();
+    }
+  }
 
   @beforeSave()
   public static async hashPassword(user: User) {
