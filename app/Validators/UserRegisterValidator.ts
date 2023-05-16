@@ -25,9 +25,11 @@ export default class UserRegisterValidator {
    */
   public schema = schema.create({
     email: schema.string({ trim: true },[
+        rules.required(),
         rules.email()
       ]),
     password: schema.string({ trim: true }, [
+      rules.required(),
       rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,16}$/),
     ]),
   });
@@ -47,6 +49,6 @@ export default class UserRegisterValidator {
     "required":"{{field}} is required",
     "email.email":"Invalid email address",
     "string":"{{field}} should be in string format",
-    "password.regex":"Password length should be 8-16 characters, should contain at least one upper case alphabet, one lower case alphabet and one number"
+    "password.regex":"Password length should be 8-16 characters.It should contain at least one upper case alphabet, one lower case alphabet and one number"
   };
 }
